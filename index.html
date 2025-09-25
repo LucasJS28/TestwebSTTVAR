@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STTTVAR - Funcionalidad Completa v16.2</title>
+    <title>STTTVAR - Funcionalidad Completa v16.3</title>
     <!-- Librería para generar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Fuentes e Iconos -->
@@ -39,11 +39,13 @@
         .header-buttons { display: flex; gap: 0.8rem; flex-shrink: 0; }
         .icon-button { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: none; background: var(--input-bg); color: var(--text-color); cursor: pointer; transition: all var(--transition-speed); box-shadow: 0 2px 8px var(--shadow-color); }
         .icon-button:hover { transform: scale(1.1); background: var(--accent-gradient); color: #fff; }
-        .text-area-wrapper { position: relative; margin-bottom: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
+        .text-area-wrapper { position: relative; margin-bottom: 0.25rem; display: flex; flex-direction: column; flex-grow: 1; }
         #subtitulo, #acumulado, #ai_response, #notes-area { padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--input-bg); width: 100%; overflow-wrap: break-word; color: var(--text-color); }
         #subtitulo { font-size: clamp(1.2rem, 3vw, 1.75rem); font-weight: 600; color: var(--subtitle-color); min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; }
         #acumulado, #ai_response { min-height: 150px; max-height: 350px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; font-size: 1.05rem; }
         #notes-area { min-height: 150px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; font-size: 1.05rem; resize: vertical; flex-grow: 1; }
+        .counter { font-size: 0.8rem; color: #718096; text-align: right; padding-right: 0.5rem; margin-bottom: 1.25rem; height: 1em; }
+        .dark-theme .counter { color: #a0aec0; }
         #notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         #notes-title { font-size: 1.25rem; font-weight: 600; color: var(--subtitle-color); }
         .hidden { display: none !important; }
@@ -68,13 +70,29 @@
         .status { font-size: 0.9rem; font-weight: 500; text-align: center; margin-top: 2rem; padding: 0.5rem 1rem; border-radius: 8px; background-color: var(--input-bg); border: 1px solid var(--border-color); transition: all var(--transition-speed); opacity: 0; }
         .status.visible { opacity: 1; } .status.success { background-color: #c6f6d5; color: #22543d; border-color: #9ae6b4;} .status.error { background-color: #fed7d7; color: #742a2a; border-color: #feb2b2;}
         .dark-theme ::placeholder { color: rgba(226, 232, 240, 0.4); }
+
+        /* ========= ESTILOS PARA EL MODO ZEN CORREGIDOS ========= */
         #zen-mode-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #111; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity var(--transition-speed); }
         body.zen-active #zen-mode-container { opacity: 1; visibility: visible; }
         #zen-subtitulo-wrapper { transition: transform var(--transition-speed) ease-in-out; }
-        #zen-subtitulo { font-size: clamp(2.5rem, 10vmin, 6rem); font-weight: 600; padding: 2rem; text-align: center; line-height: 1.4; max-width: 90vw; }
-        #zen-controls { position: absolute; top: 1.5rem; right: 1.5rem; display: flex; gap: 1rem; }
-        .zen-control-btn { width: 50px; height: 50px; font-size: 1.25rem; background-color: rgba(255, 255, 255, 0.15); border: none; color: #fff; border-radius: 50%; cursor: pointer; transition: all var(--transition-speed); }
+        #zen-subtitulo { font-size: 6rem; font-weight: 600; padding: 2rem; text-align: center; line-height: 1.4; max-width: 90vw; transition: font-size var(--transition-speed); }
+        #zen-acumulado { font-size: 2.2rem; line-height: 1.6; text-align: left; white-space: pre-wrap; padding: 2rem 3rem; max-width: 90vw; max-height: 85vh; overflow-y: auto; background-color: rgba(20, 20, 20, 0.5); border-radius: var(--border-radius); border: 1px solid rgba(255, 255, 255, 0.1); transition: font-size var(--transition-speed); }
+        
+        /* Lógica para alternar las vistas en Modo Zen (CORREGIDA) */
+        /* Por defecto, el texto acumulado está oculto en modo Zen */
+        body.zen-active #zen-acumulado { display: none; }
+        body.zen-active #zen-subtitulo-wrapper { display: block; }
+
+        /* Cuando se activa la vista acumulada, se invierte la visibilidad */
+        body.zen-active.zen-view-acumulado #zen-subtitulo-wrapper { display: none; }
+        body.zen-active.zen-view-acumulado #zen-acumulado { display: block; }
+        
+        #zen-controls { position: absolute; top: 1.5rem; right: 1.5rem; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 1rem; }
+        .zen-control-btn { width: 50px; height: 50px; font-size: 1.25rem; background-color: rgba(255, 255, 255, 0.15); border: none; color: #fff; border-radius: 50%; cursor: pointer; transition: all var(--transition-speed); display: flex; align-items: center; justify-content: center; }
         .zen-control-btn:hover { background-color: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        .font-controls { display: flex; gap: 0.5rem; background-color: rgba(255, 255, 255, 0.15); padding: 0 0.5rem; border-radius: 50px; }
+        .font-controls .zen-control-btn { background: transparent; width: 44px; height: 44px; font-size: 1.1rem; }
+
         .popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);z-index:999;opacity:0;visibility:hidden;backdrop-filter:blur(4px);transition: opacity 0.3s, visibility 0.3s;}.popup-overlay.active{opacity:1;visibility:visible}
         .popup-menu{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);background:var(--container-bg);border-radius:var(--border-radius);box-shadow:0 15px 40px rgba(0,0,0,.2);padding:0;z-index:1000;width:90%;max-width:450px;max-height:85vh;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition: transform 0.3s, opacity 0.3s, visibility 0.3s;}.popup-overlay.active .popup-menu{transform:translate(-50%,-50%) scale(1);opacity:1;visibility:visible}
         #previewModalOverlay .popup-menu { max-width: 800px; }
@@ -117,6 +135,8 @@
                 <div id="acumulado"></div>
                 <button class="copy-button" onclick="copyText('acumulado', this)" title="Copiar texto acumulado"><i class="fas fa-copy"></i><i class="fas fa-check hidden"></i></button>
             </div>
+            <div id="acumulado-counter" class="counter"></div>
+            
             <div class="quick-actions-section">
                 <button class="quick-action-btn" onclick="quickAction('summarize')"><i class="fas fa-align-left"></i> Resumir</button>
                 <button class="quick-action-btn" onclick="quickAction('keywords')"><i class="fas fa-key"></i> Puntos Clave</button>
@@ -145,18 +165,29 @@
                 <textarea id="notes-area" placeholder="Escribe tus notas aquí..."></textarea>
                 <button class="copy-button" onclick="copyText('notes-area', this)" title="Copiar apuntes"><i class="fas fa-copy"></i><i class="fas fa-check hidden"></i></button>
             </div>
+            <div id="notes-counter" class="counter"></div>
         </div>
     </div>
 </div>
 
+<!-- ========= HTML DEL MODO ZEN CORREGIDO ========= -->
 <div id="zen-mode-container">
     <div id="zen-controls">
+        <div class="font-controls">
+             <button id="zen-font-decrease-btn" class="zen-control-btn" title="Disminuir Tamaño de Letra"><i class="fas fa-font" style="font-size: 0.8em;"></i>-</button>
+             <button id="zen-font-increase-btn" class="zen-control-btn" title="Aumentar Tamaño de Letra"><i class="fas fa-font" style="font-size: 0.8em;"></i>+</button>
+        </div>
+        <button id="zen-view-toggle-btn" class="zen-control-btn" title="Ver Texto Acumulado"><i class="fas fa-file-alt"></i></button>
         <button id="zen-orientation-btn" class="zen-control-btn" title="Girar Texto"><i class="fas fa-sync-alt"></i></button>
         <button id="zen-close-btn" class="zen-control-btn" title="Cerrar"><i class="fas fa-compress"></i></button>
     </div>
+    
     <div id="zen-subtitulo-wrapper">
         <div id="zen-subtitulo"></div>
     </div>
+
+    <!-- Se ha eliminado la clase `hidden` de aquí para que el CSS tenga control total -->
+    <div id="zen-acumulado"></div>
 </div>
 
 <div class="popup-overlay" id="exportNotesModalOverlay">
@@ -186,16 +217,11 @@
                 <label for="autoScrollToggle">Scroll Automático</label>
                 <label class="switch"><input type="checkbox" id="autoScrollToggle" checked><span class="slider"></span></label>
             </div>
-            
-            <!-- SECCIÓN AÑADIDA -->
             <div class="setting-title">Idiomas</div>
             <label for="idioma">Idioma de Subtítulos</label><div class="select-wrapper"><select id="idioma"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option></select></div>
             <label for="idiomaAcumulado">Idioma de Texto Acumulado</label><div class="select-wrapper"><select id="idiomaAcumulado"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option></select></div>
-            
-            <!-- SECCIÓN AÑADIDA -->
             <div class="setting-title">Apariencia</div>
             <label for="fontSize">Tamaño de Fuente (Subtítulo)</label><div class="select-wrapper"><select id="fontSize"><option value="16">Pequeño</option><option value="24" selected>Normal</option><option value="32">Grande</option><option value="40">Extra Grande</option></select></div>
-
             <div class="setting-title">Acciones</div>
             <button id="clearTextBtn" class="action-button secondary"><i class="fas fa-eraser"></i> Limpiar Transcripción</button>
             <button id="exportBtn" class="action-button secondary"><i class="fas fa-download"></i> Exportar Contenido</button>
@@ -225,7 +251,6 @@
     const { jsPDF } = window.jspdf;
     const clientId = Math.random().toString(36).substr(2, 9);
     
-    // Objeto para centralizar todos los elementos del DOM
     const elements = {
         subtitulo: document.getElementById("subtitulo"),
         acumulado: document.getElementById("acumulado"),
@@ -237,18 +262,10 @@
         themeToggle: document.getElementById("themeToggle"),
         settingsModalOverlay: document.getElementById("settingsModalOverlay"),
         exportSection: document.getElementById("exportSection"),
-        zenModeContainer: document.getElementById('zen-mode-container'),
-        zenSubtitulo: document.getElementById('zen-subtitulo'),
-        zenSubtituloWrapper: document.getElementById('zen-subtitulo-wrapper'),
-        zenModeBtn: document.getElementById('zenModeBtn'),
-        zenCloseBtn: document.getElementById('zen-close-btn'),
-        zenOrientationBtn: document.getElementById('zen-orientation-btn'),
         autoScrollToggle: document.getElementById('autoScrollToggle'),
-        // ELEMENTOS AÑADIDOS
         idiomaSelect: document.getElementById('idioma'),
         idiomaAcumuladoSelect: document.getElementById('idiomaAcumulado'),
         fontSizeSelect: document.getElementById('fontSize'),
-        // --------
         settingsBtn: document.getElementById('settingsBtn'),
         closePopupBtn: document.getElementById('closePopupBtn'),
         popupMenu: document.getElementById('popupMenu'),
@@ -267,83 +284,80 @@
         closePreviewBtn: document.getElementById('closePreviewBtn'),
         previewContent: document.getElementById('previewContent'),
         confirmExportBtn: document.getElementById('confirmExportBtn'),
+        acumuladoCounter: document.getElementById('acumulado-counter'),
+        notesCounter: document.getElementById('notes-counter'),
+        zenModeContainer: document.getElementById('zen-mode-container'),
+        zenSubtitulo: document.getElementById('zen-subtitulo'),
+        zenSubtituloWrapper: document.getElementById('zen-subtitulo-wrapper'),
+        zenAcumulado: document.getElementById('zen-acumulado'),
+        zenModeBtn: document.getElementById('zenModeBtn'),
+        zenCloseBtn: document.getElementById('zen-close-btn'),
+        zenOrientationBtn: document.getElementById('zen-orientation-btn'),
+        zenViewToggleBtn: document.getElementById('zen-view-toggle-btn'),
+        zenFontIncreaseBtn: document.getElementById('zen-font-increase-btn'),
+        zenFontDecreaseBtn: document.getElementById('zen-font-decrease-btn'),
     };
     
-    // Variables globales
     let statusTimeout;
     let isAutoScrollActive = true;
-    let zenRotation = 0;
     let questionHistory = [];
     const MAX_HISTORY_ITEMS = 10;
     
-    // --- CONEXIÓN CON EL SERVIDOR Y RECEPCIÓN DE DATOS ---
-    // --- SIMULACIÓN DE TRANSCRIPCIÓN EN TIEMPO REAL ---
+    let zenRotation = 0;
+    let zenFontSize = 6;
+    const ZEN_FONT_STEP = 0.5;
+    const ZEN_FONT_MIN = 2;
+    const ZEN_FONT_MAX = 15;
+    
+    const textoSimulado = "Buenos días a todos. En la reunión de hoy, revisaremos los resultados del último trimestre. Como pueden ver en la presentación, hemos superado nuestros objetivos en un 15%, lo cual es un logro extraordinario. Quiero agradecer a todo el equipo por su arduo trabajo y dedicación. A continuación, analizaremos las métricas clave y discutiremos los próximos pasos para el siguiente periodo. El departamento de marketing presentará la nueva campaña publicitaria.";
+    const palabras = textoSimulado.split(' ');
+    let indiceActual = 0;
+    let textoAcumulado = "";
 
-// Puedes cambiar este texto por el que quieras simular
-const textoSimulado = "Buenos días a todos. En la reunión de hoy, revisaremos los resultados del último trimestre. Como pueden ver en la presentación, hemos superado nuestros objetivos en un 15%, lo cual es un logro extraordinario. Quiero agradecer a todo el equipo por su arduo trabajo y dedicación. A continuación, analizaremos las métricas clave y discutiremos los próximos pasos para el siguiente periodo. El departamento de marketing presentará la nueva campaña publicitaria.";
+    function iniciarSimulacion() {
+        updateStatus("Iniciando simulación de transcripción...", "success");
+        const intervalo = setInterval(() => {
+            if (indiceActual >= palabras.length) {
+                elements.subtitulo.textContent = "--- Fin de la demostración ---";
+                updateStatus("Simulación completada", "success");
+                clearInterval(intervalo);
+                return;
+            }
 
-const palabras = textoSimulado.split(' ');
-let indiceActual = 0;
-let textoAcumulado = "";
+            const fraseCorta = palabras.slice(indiceActual, indiceActual + 5).join(' ');
+            elements.subtitulo.textContent = fraseCorta + "...";
+            textoAcumulado += palabras[indiceActual] + " ";
+            elements.acumulado.textContent = textoAcumulado;
 
-/*
-// --- CONEXIÓN CON EL SERVIDOR Y RECEPCIÓN DE DATOS ---
-const source = new EventSource(`/stream?client_id=${clientId}`);
-source.onmessage = event => {
-    const data = JSON.parse(event.data);
-    elements.subtitulo.textContent = data.subtitulo;
-    elements.zenSubtitulo.textContent = data.subtitulo;
-    elements.acumulado.textContent = data.acumulado;
-    // Funcionalidad: Almacenamiento local de la transcripción
-    localStorage.setItem('stttvar_transcript', data.acumulado);
-    if (isAutoScrollActive) { elements.acumulado.scrollTop = elements.acumulado.scrollHeight; }
-    if (data.ai_response) {
-        elements.aiResponseWrapper.classList.remove('hidden');
-        elements.aiResponse.classList.remove("placeholder");
-        elements.aiResponse.textContent = data.ai_response;
-        updateStatus("Respuesta de IA recibida", "success");
+            elements.zenSubtitulo.textContent = fraseCorta;
+            elements.zenAcumulado.textContent = textoAcumulado;
+
+            updateCounters('acumulado'); 
+            if (isAutoScrollActive) {
+                elements.acumulado.scrollTop = elements.acumulado.scrollHeight;
+                elements.zenAcumulado.scrollTop = elements.zenAcumulado.scrollHeight;
+            }
+            indiceActual++;
+        }, 700);
     }
-};
-source.onerror = () => updateStatus("Desconectado. Reconectando...", "error");
-
-*/
-
-
-function iniciarSimulacion() {
-    updateStatus("Iniciando simulación de transcripción...", "success");
-    const intervalo = setInterval(() => {
-        if (indiceActual >= palabras.length) {
-            elements.subtitulo.textContent = "--- Fin de la demostración ---";
-            updateStatus("Simulación completada", "success");
-            clearInterval(intervalo);
+    
+    function updateCounters(source) {
+        let text, counterElement;
+        if (source === 'acumulado') {
+            text = elements.acumulado.textContent || "";
+            counterElement = elements.acumuladoCounter;
+        } else if (source === 'notes') {
+            text = elements.notesArea.value || "";
+            counterElement = elements.notesCounter;
+        } else {
             return;
         }
+        const charCount = text.length;
+        const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+        const wordCount = text.trim() === '' ? 0 : words.length;
+        counterElement.textContent = `Caracteres: ${charCount} | Palabras: ${wordCount}`;
+    }
 
-        // 1. Simula el subtítulo (la frase actual)
-        const fraseCorta = palabras.slice(indiceActual, indiceActual + 5).join(' ');
-        elements.subtitulo.textContent = fraseCorta + "...";
-        elements.zenSubtitulo.textContent = fraseCorta;
-
-        // 2. Añade la siguiente palabra al texto acumulado
-        textoAcumulado += palabras[indiceActual] + " ";
-        elements.acumulado.textContent = textoAcumulado;
-
-        // 3. Mueve el scroll automáticamente si está activo
-        if (isAutoScrollActive) {
-            elements.acumulado.scrollTop = elements.acumulado.scrollHeight;
-        }
-
-        // 4. Avanza a la siguiente palabra
-        indiceActual++;
-
-    }, 700); // 700 milisegundos (0.7 segundos) entre cada palabra. Puedes ajustar este valor.
-}
-
-// Inicia la simulación automáticamente cuando la página carga
-iniciarSimulacion();
-// --- FIN DEL CÓDIGO DE SIMULACIÓN ---
-
-    // --- FUNCIONES UTILITARIAS ---
     function copyText(elementId, button) {
         const element = document.getElementById(elementId);
         const textToCopy = (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') ? element.value : element.textContent;
@@ -354,50 +368,95 @@ iniciarSimulacion();
             if (copyIcon && checkIcon) { copyIcon.classList.add('hidden'); checkIcon.classList.remove('hidden'); setTimeout(() => { copyIcon.classList.remove('hidden'); checkIcon.classList.add('hidden'); }, 2000); }
         }).catch(err => { console.error("Error al copiar texto:", err); updateStatus("Error al copiar texto", "error"); });
     }
-    function updateStatus(message, type = "normal", duration = 3000) { clearTimeout(statusTimeout); elements.status.textContent = message; elements.status.className = `status visible ${type}`; statusTimeout = setTimeout(() => elements.status.classList.remove('visible', 'success', 'error'), duration); }
-    function makeRequest(url, successMessage, errorMessage) { fetch(url, { method: 'POST' }).then(response => { if (!response.ok) throw new Error(errorMessage); updateStatus(successMessage, "success"); }).catch(error => { console.error(errorMessage, error); updateStatus(errorMessage, "error"); }); }
 
-    // --- LÓGICA DE EXPORTACIÓN Y VISTA PREVIA ---
-    function generateTextHeader(title) { const date = new Date(); const dateString = date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }); const timeString = date.toLocaleTimeString('es-ES'); return `==============================\n STTTVAR - ${title}\n==============================\nGenerado el: ${dateString} a las ${timeString}\n\n`; }
+    function updateStatus(message, type = "normal", duration = 3000) {
+        clearTimeout(statusTimeout);
+        elements.status.textContent = message;
+        elements.status.className = `status visible ${type}`;
+        statusTimeout = setTimeout(() => elements.status.classList.remove('visible', 'success', 'error'), duration);
+    }
+
+    function makeRequest(url, successMessage, errorMessage) {
+        fetch(url, { method: 'POST' })
+            .then(response => { if (!response.ok) throw new Error(errorMessage); updateStatus(successMessage, "success"); })
+            .catch(error => { console.error(errorMessage, error); updateStatus(errorMessage, "error"); });
+    }
+
+    function generateTextHeader(title) {
+        const date = new Date();
+        const dateString = date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeString = date.toLocaleTimeString('es-ES');
+        return `==============================\n STTTVAR - ${title}\n==============================\nGenerado el: ${dateString} a las ${timeString}\n\n`;
+    }
+
     function downloadContent(content, format, filename, title) {
         if (!content || !content.trim()) { updateStatus("No hay contenido para exportar", "error"); return; }
         if (format === 'txt' || format === 'md') {
             const fullContent = generateTextHeader(title) + content;
-            const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${filename}.${format}`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); updateStatus(`.${format} descargado`, "success");
+            const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateStatus(`.${format} descargado`, "success");
         } else if (format === 'pdf') {
             const doc = new jsPDF();
             const splitText = doc.splitTextToSize(generateTextHeader(title) + content, 180);
-            doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.text(splitText, 15, 20);
-            doc.save(`${filename}.pdf`); updateStatus('.pdf descargado', "success");
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            doc.text(splitText, 15, 20);
+            doc.save(`${filename}.pdf`);
+            updateStatus('.pdf descargado', "success");
         }
     }
+
     function showExportPreview() {
-        const sourceOption = document.getElementById("exportSource").value; const format = document.getElementById("exportFormat").value; const filename = document.getElementById("exportFilename").value || "exportacion";
-        let content = ""; let title = ""; const transcriptText = elements.acumulado.textContent; const notesText = elements.notesArea.value;
+        const sourceOption = document.getElementById("exportSource").value;
+        const format = document.getElementById("exportFormat").value;
+        const filename = document.getElementById("exportFilename").value || "exportacion";
+        let content = "";
+        let title = "";
+        const transcriptText = elements.acumulado.textContent;
+        const notesText = elements.notesArea.value;
         switch (sourceOption) {
             case 'transcript': content = transcriptText; title = "Transcripción"; break;
             case 'notes': content = notesText; title = "Apuntes Personales"; break;
             case 'both': content = `--- TRANSCRIPCIÓN ---\n\n${transcriptText}\n\n\n--- MIS APUNTES ---\n\n${notesText}`; title = "Transcripción y Apuntes"; break;
         }
         if (!content.trim()) { updateStatus("No hay contenido para previsualizar", "error"); return; }
-        
         elements.previewContent.textContent = generateTextHeader(title) + content;
         elements.previewModalOverlay.classList.add('active');
-        
         elements.confirmExportBtn.onclick = () => {
             downloadContent(content, format, filename, title);
             elements.previewModalOverlay.classList.remove('active');
         };
     }
 
-    // --- LÓGICA DE APUNTES ---
-    const toggleNotesView = () => { document.body.classList.toggle('notes-active'); const isActive = document.body.classList.contains('notes-active'); elements.notesToggleBtn.innerHTML = isActive ? `<i class="fas fa-times"></i>` : `<i class="fas fa-clipboard"></i>`; saveSettings(); }
-    const toggleNotesExportModal = () => elements.exportNotesModalOverlay.classList.toggle('active');
-    function downloadNotes() { const format = document.getElementById("notesExportFormat").value; const filename = document.getElementById("notesExportFilename").value || "mis_apuntes"; downloadContent(elements.notesArea.value, format, filename, "Apuntes Personales"); toggleNotesExportModal(); }
+    const toggleNotesView = () => {
+        document.body.classList.toggle('notes-active');
+        const isActive = document.body.classList.contains('notes-active');
+        elements.notesToggleBtn.innerHTML = isActive ? `<i class="fas fa-times"></i>` : `<i class="fas fa-clipboard"></i>`;
+        saveSettings();
+    }
 
-    // --- LÓGICA DE PREFERENCIAS Y ALMACENAMIENTO LOCAL ---
-    const adjustFontSize = size => { elements.subtitulo.style.fontSize = `${size}px`; elements.acumulado.style.fontSize = `${Math.max(16, size * 0.7)}px`; elements.aiResponse.style.fontSize = `${Math.max(16, size * 0.7)}px`; };
+    const toggleNotesExportModal = () => elements.exportNotesModalOverlay.classList.toggle('active');
+
+    function downloadNotes() {
+        const format = document.getElementById("notesExportFormat").value;
+        const filename = document.getElementById("notesExportFilename").value || "mis_apuntes";
+        downloadContent(elements.notesArea.value, format, filename, "Apuntes Personales");
+        toggleNotesExportModal();
+    }
+
+    const adjustFontSize = size => {
+        elements.subtitulo.style.fontSize = `${size}px`;
+        elements.acumulado.style.fontSize = `${Math.max(16, size * 0.7)}px`;
+        elements.aiResponse.style.fontSize = `${Math.max(16, size * 0.7)}px`;
+    };
 
     function saveSettings() {
         const settings = {
@@ -405,13 +464,13 @@ iniciarSimulacion();
             autoScroll: elements.autoScrollToggle.checked,
             notesContent: elements.notesArea.value,
             notesVisible: document.body.classList.contains('notes-active'),
-            // AÑADIDO
             lang: elements.idiomaSelect.value,
             langAcc: elements.idiomaAcumuladoSelect.value,
             fontSize: elements.fontSizeSelect.value,
         };
         localStorage.setItem('stttvar_settings', JSON.stringify(settings));
     }
+
     function loadSettings() {
         const settings = JSON.parse(localStorage.getItem('stttvar_settings'));
         if (settings) {
@@ -421,7 +480,6 @@ iniciarSimulacion();
             elements.autoScrollToggle.checked = isAutoScrollActive;
             if (settings.notesContent) { elements.notesArea.value = settings.notesContent; }
             if (settings.notesVisible) { toggleNotesView(); }
-            // LÓGICA AÑADIDA
             if(settings.lang) elements.idiomaSelect.value = settings.lang;
             if(settings.langAcc) elements.idiomaAcumuladoSelect.value = settings.langAcc;
             if(settings.fontSize) { 
@@ -429,36 +487,55 @@ iniciarSimulacion();
                 adjustFontSize(settings.fontSize); 
             }
         }
-        const savedTranscript = localStorage.getItem('stttvar_transcript'); if (savedTranscript) { elements.acumulado.textContent = savedTranscript; }
-        const savedHistory = localStorage.getItem('stttvar_question_history'); if (savedHistory) { questionHistory = JSON.parse(savedHistory); }
+        const savedTranscript = localStorage.getItem('stttvar_transcript');
+        if (savedTranscript) { elements.acumulado.textContent = savedTranscript; }
+        const savedHistory = localStorage.getItem('stttvar_question_history');
+        if (savedHistory) { questionHistory = JSON.parse(savedHistory); }
     }
-    const toggleTheme = () => { document.body.classList.toggle('dark-theme'); elements.themeToggle.innerHTML = document.body.classList.contains('dark-theme') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; saveSettings(); }
-    
-    // --- LÓGICA DE PREGUNTAS A LA IA E HISTORIAL ---
+
+    const toggleTheme = () => {
+        document.body.classList.toggle('dark-theme');
+        elements.themeToggle.innerHTML = document.body.classList.contains('dark-theme') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        saveSettings();
+    }
+
     function sendQuestion(customPrompt) {
-        const question = customPrompt || elements.aiQuestion.value.trim(); if (!question) { updateStatus("Por favor, escribe una pregunta", "error"); return; }
-        const btnContent = elements.sendQuestionBtn.querySelector('.button-content'); const btnLoader = elements.sendQuestionBtn.querySelector('.button-loader');
-        elements.sendQuestionBtn.disabled = true; btnContent.classList.add('hidden'); btnLoader.classList.remove('hidden');
-        elements.aiResponseWrapper.classList.remove('hidden'); elements.aiResponse.textContent = "Procesando...";
+        const question = customPrompt || elements.aiQuestion.value.trim();
+        if (!question) { updateStatus("Por favor, escribe una pregunta", "error"); return; }
+        const btnContent = elements.sendQuestionBtn.querySelector('.button-content');
+        const btnLoader = elements.sendQuestionBtn.querySelector('.button-loader');
+        elements.sendQuestionBtn.disabled = true;
+        btnContent.classList.add('hidden');
+        btnLoader.classList.remove('hidden');
+        elements.aiResponseWrapper.classList.remove('hidden');
+        elements.aiResponse.textContent = "Procesando...";
         if (!customPrompt) { addQuestionToHistory(question); }
         
         fetch(`/ask_ai/${clientId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: question }) })
             .then(res => { if (!res.ok) throw new Error("Error en servidor"); updateStatus("Pregunta enviada", "success"); })
             .catch(err => updateStatus("Error al enviar pregunta", "error"))
-            .finally(() => { elements.sendQuestionBtn.disabled = false; btnContent.classList.remove('hidden'); btnLoader.classList.add('hidden'); });
+            .finally(() => {
+                elements.sendQuestionBtn.disabled = false;
+                btnContent.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            });
         if (!customPrompt) elements.aiQuestion.value = "";
     }
+
     function quickAction(actionType) {
-        const text = elements.acumulado.textContent; if (!text.trim()) { updateStatus("No hay texto para procesar", "error"); return; }
+        const text = elements.acumulado.textContent;
+        if (!text.trim()) { updateStatus("No hay texto para procesar", "error"); return; }
         const prompts = { summarize: "Resume el texto:\n\n", keywords: "Extrae 5 puntos clave:\n\n", correct: "Corrige la gramática:\n\n" };
         sendQuestion(prompts[actionType] + text);
     }
+
     function addQuestionToHistory(question) {
         questionHistory = questionHistory.filter(item => item !== question);
         questionHistory.unshift(question);
         if (questionHistory.length > MAX_HISTORY_ITEMS) { questionHistory.pop(); }
         localStorage.setItem('stttvar_question_history', JSON.stringify(questionHistory));
     }
+
     function renderQuestionHistory() {
         elements.questionHistoryPopup.innerHTML = '';
         if (questionHistory.length === 0) {
@@ -466,7 +543,8 @@ iniciarSimulacion();
             return;
         }
         questionHistory.forEach((item, index) => {
-            const historyDiv = document.createElement('div'); historyDiv.className = 'history-item';
+            const historyDiv = document.createElement('div');
+            historyDiv.className = 'history-item';
             historyDiv.innerHTML = `<span></span><button class="history-delete-btn" title="Eliminar del historial" data-index="${index}"><i class="fas fa-times"></i></button>`;
             historyDiv.querySelector('span').textContent = item;
             historyDiv.querySelector('span').addEventListener('click', () => { elements.aiQuestion.value = item; elements.questionHistoryPopup.classList.add('hidden'); elements.aiQuestion.focus(); });
@@ -475,19 +553,50 @@ iniciarSimulacion();
         });
     }
 
-    // --- OTRAS FUNCIONALIDADES Y EVENTOS ---
-    const toggleSettingsModal = () => { elements.settingsModalOverlay.classList.toggle('active'); if (!elements.settingsModalOverlay.classList.contains('active')) { elements.exportSection.classList.remove("active"); } };
-    const toggleZenMode = () => { document.body.classList.toggle('zen-active'); zenRotation = 0; elements.zenSubtituloWrapper.style.transform = `rotate(${zenRotation}deg)`; };
-    function rotateZenText() { zenRotation = (zenRotation + 90) % 360; elements.zenSubtituloWrapper.style.transform = `rotate(${zenRotation}deg)`; }
+    const toggleSettingsModal = () => {
+        elements.settingsModalOverlay.classList.toggle('active');
+        if (!elements.settingsModalOverlay.classList.contains('active')) {
+            elements.exportSection.classList.remove("active");
+        }
+    };
+    
+    function applyZenFontSize() {
+        elements.zenSubtitulo.style.fontSize = `${zenFontSize}vmin`;
+        elements.zenAcumulado.style.fontSize = `${Math.max(ZEN_FONT_MIN, zenFontSize * 0.4)}vmin`;
+    }
 
-    // --- ASIGNACIÓN DE EVENTOS (EVENT LISTENERS) ---
-    document.addEventListener('DOMContentLoaded', () => { loadSettings(); updateStatus("Listo", "success", 1500); });
+    const toggleZenMode = () => {
+        document.body.classList.toggle('zen-active');
+        if (document.body.classList.contains('zen-active')) {
+            document.body.classList.remove('zen-view-acumulado');
+            elements.zenViewToggleBtn.innerHTML = `<i class="fas fa-file-alt"></i>`;
+            elements.zenViewToggleBtn.title = "Ver Texto Acumulado";
+            zenFontSize = 6;
+            applyZenFontSize();
+            zenRotation = 0;
+            elements.zenSubtituloWrapper.style.transform = `rotate(${zenRotation}deg)`;
+        }
+    };
+    
+    function rotateZenText() {
+        zenRotation = (zenRotation + 90) % 360;
+        elements.zenSubtituloWrapper.style.transform = `rotate(${zenRotation}deg)`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+        updateCounters('acumulado');
+        updateCounters('notes');
+        updateStatus("Listo", "success", 1500);
+        iniciarSimulacion();
+    });
+
     elements.themeToggle.addEventListener('click', toggleTheme);
     elements.settingsBtn.addEventListener('click', toggleSettingsModal);
     elements.closePopupBtn.addEventListener('click', toggleSettingsModal);
     elements.settingsModalOverlay.addEventListener('click', (e) => { if(e.target === elements.settingsModalOverlay) toggleSettingsModal() });
     elements.popupMenu.addEventListener('click', (e) => e.stopPropagation());
-    elements.clearTextBtn.addEventListener('click', () => { if (confirm("¿Estás seguro de que quieres borrar toda la transcripción? Esta acción no se puede deshacer.")) { makeRequest(`/clear_text/${clientId}`, "Transcripción limpiada", "Error"); elements.aiResponseWrapper.classList.add("hidden"); elements.acumulado.textContent = ''; localStorage.removeItem('stttvar_transcript'); } });
+    elements.clearTextBtn.addEventListener('click', () => { if (confirm("¿Estás seguro de que quieres borrar toda la transcripción? Esta acción no se puede deshacer.")) { makeRequest(`/clear_text/${clientId}`, "Transcripción limpiada", "Error"); elements.aiResponseWrapper.classList.add("hidden"); elements.acumulado.textContent = ''; updateCounters('acumulado'); localStorage.removeItem('stttvar_transcript'); } });
     elements.exportBtn.addEventListener('click', () => elements.exportSection.classList.toggle("active"));
     elements.previewAndExportBtn.addEventListener('click', showExportPreview);
     elements.closePreviewBtn.addEventListener('click', () => elements.previewModalOverlay.classList.remove('active'));
@@ -495,17 +604,44 @@ iniciarSimulacion();
     elements.previewModalOverlay.querySelector('.popup-menu').addEventListener('click', (e) => e.stopPropagation());
     elements.sendQuestionBtn.addEventListener("click", () => sendQuestion());
     elements.aiQuestion.addEventListener("keypress", event => { if (event.key === "Enter") sendQuestion(); });
+
     elements.zenModeBtn.addEventListener('click', toggleZenMode);
     elements.zenCloseBtn.addEventListener('click', toggleZenMode);
     elements.zenOrientationBtn.addEventListener('click', rotateZenText);
+
+    elements.zenViewToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('zen-view-acumulado');
+        const isAcumuladoView = document.body.classList.contains('zen-view-acumulado');
+        if (isAcumuladoView) {
+            elements.zenViewToggleBtn.innerHTML = `<i class="fas fa-quote-left"></i>`;
+            elements.zenViewToggleBtn.title = "Ver Subtítulo Actual";
+            elements.zenAcumulado.scrollTop = elements.zenAcumulado.scrollHeight;
+        } else {
+            elements.zenViewToggleBtn.innerHTML = `<i class="fas fa-file-alt"></i>`;
+            elements.zenViewToggleBtn.title = "Ver Texto Acumulado";
+        }
+    });
+
+    elements.zenFontIncreaseBtn.addEventListener('click', () => {
+        if (zenFontSize < ZEN_FONT_MAX) {
+            zenFontSize += ZEN_FONT_STEP;
+            applyZenFontSize();
+        }
+    });
+
+    elements.zenFontDecreaseBtn.addEventListener('click', () => {
+        if (zenFontSize > ZEN_FONT_MIN) {
+            zenFontSize -= ZEN_FONT_STEP;
+            applyZenFontSize();
+        }
+    });
+
     elements.autoScrollToggle.addEventListener('change', (event) => { isAutoScrollActive = event.target.checked; saveSettings(); });
-    // EVENTOS AÑADIDOS
     elements.idiomaSelect.addEventListener('change', () => { makeRequest(`/set_language/${clientId}/${elements.idiomaSelect.value}`); saveSettings(); });
     elements.idiomaAcumuladoSelect.addEventListener('change', () => { makeRequest(`/set_language_acumulado/${clientId}/${elements.idiomaAcumuladoSelect.value}`); saveSettings(); });
     elements.fontSizeSelect.addEventListener('change', () => { adjustFontSize(elements.fontSizeSelect.value); saveSettings(); });
-    // ---------
     elements.notesToggleBtn.addEventListener('click', toggleNotesView);
-    elements.notesArea.addEventListener('input', saveSettings);
+    elements.notesArea.addEventListener('input', () => { saveSettings(); updateCounters('notes'); });
     elements.exportNotesBtn.addEventListener('click', toggleNotesExportModal);
     elements.closeNotesExportBtn.addEventListener('click', toggleNotesExportModal);
     elements.confirmExportNotesBtn.addEventListener('click', downloadNotes);
@@ -515,7 +651,7 @@ iniciarSimulacion();
         elements.questionHistoryPopup.classList.toggle('hidden');
         if (!elements.questionHistoryPopup.classList.contains('hidden')) { renderQuestionHistory(); }
     });
-    document.addEventListener('click', (e) => { if (!elements.aiQuestion.parentElement.contains(e.target)) { elements.questionHistoryPopup.classList.add('hidden'); } });
+    document.addEventListener('click', (e) => { if (elements.aiQuestion.parentElement && !elements.aiQuestion.parentElement.contains(e.target)) { elements.questionHistoryPopup.classList.add('hidden'); } });
 
 </script>
 
