@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STTTVAR - Funcionalidad Completa v16.2</title>
+    <!-- Librería para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Fuentes e Iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #f0f4f8; --text-color: #1a202c; --container-bg: #ffffff; --border-color: #e2e8f0; --input-bg: #f7fafc; --shadow-color: rgba(0, 0, 0, 0.08);
+            --accent-color: #3182ce; --accent-gradient: linear-gradient(135deg, #4a90e2, #56c1c7); --accent-gradient-hover: linear-gradient(135deg, #56c1c7, #4a90e2); --subtitle-color: #2b6cb0;
+            --border-radius: 16px; --transition-speed: 0.3s;
+        }
+        .dark-theme {
+            --bg-color: #1a202c; --text-color: #e2e8f0; --container-bg: #2d3748; --border-color: #4a5568; --input-bg: #1a202c; --shadow-color: rgba(0, 0, 0, 0.3); --subtitle-color: #63b3ed;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 2rem 1rem; transition: background-color var(--transition-speed), color var(--transition-speed); }
+        .container { max-width: 900px; width: 100%; background-color: var(--container-bg); border-radius: var(--border-radius); padding: 2rem; box-shadow: 0 10px 30px var(--shadow-color); border: 1px solid var(--border-color); transition: all var(--transition-speed); }
+        .notes-active .container { max-width: 1400px; }
+        .main-content { display: grid; grid-template-columns: 1fr; gap: 2rem; transition: grid-template-columns var(--transition-speed); }
+        .notes-active .main-content { grid-template-columns: 1fr 1fr; }
+        .main-column { min-width: 0; display: flex; flex-direction: column; }
+        #notes-wrapper { display: none; }
+        .notes-active #notes-wrapper { display: flex; flex-direction: column; animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
+        h1 { font-family: 'Poppins', sans-serif; font-size: clamp(1.8rem, 4vw, 2.5rem); display: flex; align-items: center; gap: 0.8rem; color: var(--text-color); margin: 0; flex-shrink: 1; }
+        h1 i { color: var(--accent-color); animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        .header-buttons { display: flex; gap: 0.8rem; flex-shrink: 0; }
+        .icon-button { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: none; background: var(--input-bg); color: var(--text-color); cursor: pointer; transition: all var(--transition-speed); box-shadow: 0 2px 8px var(--shadow-color); }
+        .icon-button:hover { transform: scale(1.1); background: var(--accent-gradient); color: #fff; }
+        .text-area-wrapper { position: relative; margin-bottom: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
+        #subtitulo, #acumulado, #ai_response, #notes-area { padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--input-bg); width: 100%; overflow-wrap: break-word; color: var(--text-color); }
+        #subtitulo { font-size: clamp(1.2rem, 3vw, 1.75rem); font-weight: 600; color: var(--subtitle-color); min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        #acumulado, #ai_response { min-height: 150px; max-height: 350px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; font-size: 1.05rem; }
+        #notes-area { min-height: 150px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; font-size: 1.05rem; resize: vertical; flex-grow: 1; }
+        #notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        #notes-title { font-size: 1.25rem; font-weight: 600; color: var(--subtitle-color); }
+        .hidden { display: none !important; }
+        .copy-button { position: absolute; top: 1rem; right: 1rem; width: 36px; height: 36px; background-color: var(--container-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: all var(--transition-speed); z-index: 10; }
+        .copy-button:hover { opacity: 1; transform: scale(1.1); } .copy-button .fa-check { color: #38a169; }
+        .quick-actions-section { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .quick-action-btn { flex: 1; min-width: 120px; padding: 0.6rem 0.5rem; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px; cursor: pointer; transition: all var(--transition-speed); display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .quick-action-btn:hover { background: var(--accent-gradient); color: #fff; border-color: transparent; }
+        .question-section { display: flex; gap: 1rem; align-items: center; }
+        .ai-question-wrapper { position: relative; flex-grow: 1; }
+        #ai_question { width: 100%; padding: 0.8rem 3rem 0.8rem 1rem; font-size: 1rem; border-radius: 10px; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+        #questionHistoryBtn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; font-size: 0.9rem; opacity: 0.7; }
+        #questionHistoryBtn:hover { transform: translateY(-50%) scale(1.1); opacity: 1; }
+        #questionHistoryPopup { position: absolute; bottom: 105%; left: 0; right: 0; background-color: var(--container-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 8px 25px var(--shadow-color); z-index: 100; max-height: 250px; overflow-y: auto; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; cursor: pointer; transition: background-color var(--transition-speed); border-bottom: 1px solid var(--border-color); }
+        .history-item:last-child { border-bottom: none; }
+        .history-item:hover { background-color: var(--input-bg); }
+        .history-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; margin-right: 1rem; font-size: 0.95rem; }
+        .history-delete-btn { background: none; border: none; color: #c53030; cursor: pointer; font-size: 0.9rem; flex-shrink: 0; padding: 0.2rem; }
+        #sendQuestion { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem 1.5rem; font-size: 1rem; font-weight: 600; color: #fff; background: var(--accent-gradient); border: none; border-radius: 10px; cursor: pointer; transition: all var(--transition-speed); box-shadow: 0 4px 15px rgba(0,0,0,0.1); min-width: 130px; }
+        #sendQuestion:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); background: var(--accent-gradient-hover); }
+        .status { font-size: 0.9rem; font-weight: 500; text-align: center; margin-top: 2rem; padding: 0.5rem 1rem; border-radius: 8px; background-color: var(--input-bg); border: 1px solid var(--border-color); transition: all var(--transition-speed); opacity: 0; }
+        .status.visible { opacity: 1; } .status.success { background-color: #c6f6d5; color: #22543d; border-color: #9ae6b4;} .status.error { background-color: #fed7d7; color: #742a2a; border-color: #feb2b2;}
+        .dark-theme ::placeholder { color: rgba(226, 232, 240, 0.4); }
+        #zen-mode-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #111; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity var(--transition-speed); }
+        body.zen-active #zen-mode-container { opacity: 1; visibility: visible; }
+        #zen-subtitulo-wrapper { transition: transform var(--transition-speed) ease-in-out; }
+        #zen-subtitulo { font-size: clamp(2.5rem, 10vmin, 6rem); font-weight: 600; padding: 2rem; text-align: center; line-height: 1.4; max-width: 90vw; }
+        #zen-controls { position: absolute; top: 1.5rem; right: 1.5rem; display: flex; gap: 1rem; }
+        .zen-control-btn { width: 50px; height: 50px; font-size: 1.25rem; background-color: rgba(255, 255, 255, 0.15); border: none; color: #fff; border-radius: 50%; cursor: pointer; transition: all var(--transition-speed); }
+        .zen-control-btn:hover { background-color: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        .popup-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);z-index:999;opacity:0;visibility:hidden;backdrop-filter:blur(4px);transition: opacity 0.3s, visibility 0.3s;}.popup-overlay.active{opacity:1;visibility:visible}
+        .popup-menu{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);background:var(--container-bg);border-radius:var(--border-radius);box-shadow:0 15px 40px rgba(0,0,0,.2);padding:0;z-index:1000;width:90%;max-width:450px;max-height:85vh;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition: transform 0.3s, opacity 0.3s, visibility 0.3s;}.popup-overlay.active .popup-menu{transform:translate(-50%,-50%) scale(1);opacity:1;visibility:visible}
+        #previewModalOverlay .popup-menu { max-width: 800px; }
+        .popup-header{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid var(--border-color); flex-shrink: 0;}
+        .popup-content{display:flex;flex-direction:column;gap:1.25rem;padding:1.5rem; overflow-y: auto;}
+        #previewContent { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; max-height: 50vh; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 0.9rem; line-height: 1.5; color: var(--text-color); }
+        .setting-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; }
+        .setting-title { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; color: var(--subtitle-color); opacity: 0.7; margin: 1rem 0 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .select-wrapper{position:relative}.select-wrapper::after{content:'\f078';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;top:50%;right:1rem;transform:translateY(-50%);pointer-events:none}
+        .popup-content select, .popup-content input[type="text"] { width:100%;padding:.8rem 1rem;font-size:1rem;border-radius:10px;border:1px solid var(--border-color);background:var(--input-bg);color:var(--text-color); margin-top: 0.25rem; appearance: none; -webkit-appearance: none;}
+        .popup-content .action-button { width:100%;padding:.8rem;font-size:1rem;border-radius:10px;border:none;background:var(--accent-gradient);color:#fff;cursor:pointer; font-weight: 600; margin-top: 1rem; }
+        .popup-content .action-button.secondary { background: transparent; color: var(--text-color); border: 1px solid var(--border-color); }
+        .popup-content .action-button.secondary:hover { background: var(--input-bg); border-color: var(--accent-color); }
+        .export-section { display: none; flex-direction: column; gap: 1.25rem; margin-top: 1rem; background-color: var(--input-bg); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); }
+        .export-section.active { display: flex; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; } .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 28px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--accent-color); } input:checked + .slider:before { transform: translateX(22px); }
+        @media (max-width: 1024px) { .notes-active .main-content { grid-template-columns: 1fr; } .container { padding: 1.5rem; } }
+        @media (max-width: 480px) { .container { padding: 1rem; } .main-header { justify-content: center; } .question-section { flex-direction: column; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="main-header">
+        <h1><i class="fas fa-microphone-alt"></i> STTTVAR</h1>
+        <div class="header-buttons">
+            <button id="notesToggleBtn" class="icon-button" title="Mostrar/Ocultar Apuntes"><i class="fas fa-clipboard"></i></button>
+            <button id="zenModeBtn" class="icon-button" title="Modo Pantalla Completa"><i class="fas fa-expand"></i></button>
+            <button id="themeToggle" class="icon-button" title="Cambiar tema"><i class="fas fa-moon"></i></button>
+            <button id="settingsBtn" class="icon-button" title="Opciones"><i class="fas fa-cog"></i></button>
+        </div>
+    </header>
+    <div class="main-content">
+        <div class="main-column">
+            <div id="subtitulo">Esperando transmisión...</div>
+            <div class="text-area-wrapper">
+                <div id="acumulado"></div>
+                <button class="copy-button" onclick="copyText('acumulado', this)" title="Copiar texto acumulado"><i class="fas fa-copy"></i><i class="fas fa-check hidden"></i></button>
+            </div>
+            <div class="quick-actions-section">
+                <button class="quick-action-btn" onclick="quickAction('summarize')"><i class="fas fa-align-left"></i> Resumir</button>
+                <button class="quick-action-btn" onclick="quickAction('keywords')"><i class="fas fa-key"></i> Puntos Clave</button>
+                <button class="quick-action-btn" onclick="quickAction('correct')"><i class="fas fa-check-double"></i> Corregir</button>
+            </div>
+            <div class="question-section">
+                <div class="ai-question-wrapper">
+                    <input type="text" id="ai_question" placeholder="O haz una pregunta personalizada...">
+                    <button id="questionHistoryBtn" class="icon-button" title="Historial de preguntas"><i class="fas fa-history"></i></button>
+                    <div id="questionHistoryPopup" class="hidden"></div>
+                </div>
+                <button id="sendQuestion"><span class="button-content"><i class="fas fa-paper-plane"></i> Preguntar</span><span class="button-loader hidden"><i class="fas fa-spinner fa-spin"></i></span></button>
+            </div>
+            <div class="text-area-wrapper hidden" id="aiResponseWrapper">
+                <div id="ai_response"></div>
+                <button class="copy-button" onclick="copyText('ai_response', this)" title="Copiar respuesta"><i class="fas fa-copy"></i><i class="fas fa-check hidden"></i></button>
+            </div>
+            <div class="status" id="status">Conectado</div>
+        </div>
+        <div id="notes-wrapper">
+            <div id="notes-header">
+                <h2 id="notes-title"><i class="fas fa-pencil-alt"></i> Mis Apuntes</h2>
+                <button id="exportNotesBtn" class="icon-button" title="Exportar Apuntes"><i class="fas fa-save"></i></button>
+            </div>
+            <div class="text-area-wrapper">
+                <textarea id="notes-area" placeholder="Escribe tus notas aquí..."></textarea>
+                <button class="copy-button" onclick="copyText('notes-area', this)" title="Copiar apuntes"><i class="fas fa-copy"></i><i class="fas fa-check hidden"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="zen-mode-container">
+    <div id="zen-controls">
+        <button id="zen-orientation-btn" class="zen-control-btn" title="Girar Texto"><i class="fas fa-sync-alt"></i></button>
+        <button id="zen-close-btn" class="zen-control-btn" title="Cerrar"><i class="fas fa-compress"></i></button>
+    </div>
+    <div id="zen-subtitulo-wrapper">
+        <div id="zen-subtitulo"></div>
+    </div>
+</div>
+
+<div class="popup-overlay" id="exportNotesModalOverlay">
+    <div class="popup-menu">
+        <div class="popup-header">
+            <h2>Exportar Apuntes</h2>
+            <button id="closeNotesExportBtn" class="icon-button"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="popup-content">
+            <label for="notesExportFormat">Formato de Archivo</label>
+            <div class="select-wrapper"><select id="notesExportFormat"><option value="txt">Texto Plano (.txt)</option><option value="md">Markdown (.md)</option><option value="pdf">PDF (.pdf)</option></select></div>
+            <label for="notesExportFilename">Nombre del Archivo</label><input type="text" id="notesExportFilename" placeholder="mis_apuntes">
+            <button id="confirmExportNotesBtn" class="action-button"><i class="fas fa-download"></i> Exportar</button>
+        </div>
+    </div>
+</div>
+
+<div class="popup-overlay" id="settingsModalOverlay">
+    <div class="popup-menu" id="popupMenu">
+        <div class="popup-header">
+            <h2>Opciones</h2>
+            <button id="closePopupBtn" class="icon-button"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="popup-content">
+            <div class="setting-title">General</div>
+            <div class="setting-item">
+                <label for="autoScrollToggle">Scroll Automático</label>
+                <label class="switch"><input type="checkbox" id="autoScrollToggle" checked><span class="slider"></span></label>
+            </div>
+            
+            <!-- SECCIÓN AÑADIDA -->
+            <div class="setting-title">Idiomas</div>
+            <label for="idioma">Idioma de Subtítulos</label><div class="select-wrapper"><select id="idioma"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option></select></div>
+            <label for="idiomaAcumulado">Idioma de Texto Acumulado</label><div class="select-wrapper"><select id="idiomaAcumulado"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="de">Alemán</option></select></div>
+            
+            <!-- SECCIÓN AÑADIDA -->
+            <div class="setting-title">Apariencia</div>
+            <label for="fontSize">Tamaño de Fuente (Subtítulo)</label><div class="select-wrapper"><select id="fontSize"><option value="16">Pequeño</option><option value="24" selected>Normal</option><option value="32">Grande</option><option value="40">Extra Grande</option></select></div>
+
+            <div class="setting-title">Acciones</div>
+            <button id="clearTextBtn" class="action-button secondary"><i class="fas fa-eraser"></i> Limpiar Transcripción</button>
+            <button id="exportBtn" class="action-button secondary"><i class="fas fa-download"></i> Exportar Contenido</button>
+            <div class="export-section" id="exportSection">
+                <label for="exportSource">¿Qué deseas exportar?</label><div class="select-wrapper"><select id="exportSource"><option value="transcript">Solo Transcripción</option><option value="notes">Solo Apuntes</option><option value="both">Ambos</option></select></div>
+                <label for="exportFormat">Formato</label><div class="select-wrapper"><select id="exportFormat"><option value="txt">TXT</option><option value="md">Markdown</option><option value="pdf">PDF</option></select></div>
+                <label for="exportFilename">Nombre del archivo</label><input type="text" id="exportFilename" placeholder="mi_archivo"><button id="previewAndExportBtn" class="action-button"><i class="fas fa-eye"></i> Vista Previa y Exportar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popup-overlay" id="previewModalOverlay">
+    <div class="popup-menu">
+        <div class="popup-header">
+            <h2>Vista Previa de Exportación</h2>
+            <button id="closePreviewBtn" class="icon-button"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="popup-content">
+            <pre id="previewContent"></pre>
+            <button id="confirmExportBtn" class="action-button"><i class="fas fa-download"></i> Confirmar y Descargar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { jsPDF } = window.jspdf;
+    const clientId = Math.random().toString(36).substr(2, 9);
+    
+    // Objeto para centralizar todos los elementos del DOM
+    const elements = {
+        subtitulo: document.getElementById("subtitulo"),
+        acumulado: document.getElementById("acumulado"),
+        aiResponse: document.getElementById("ai_response"),
+        aiResponseWrapper: document.getElementById('aiResponseWrapper'),
+        status: document.getElementById("status"),
+        aiQuestion: document.getElementById("ai_question"),
+        sendQuestionBtn: document.getElementById("sendQuestion"),
+        themeToggle: document.getElementById("themeToggle"),
+        settingsModalOverlay: document.getElementById("settingsModalOverlay"),
+        exportSection: document.getElementById("exportSection"),
+        zenModeContainer: document.getElementById('zen-mode-container'),
+        zenSubtitulo: document.getElementById('zen-subtitulo'),
+        zenSubtituloWrapper: document.getElementById('zen-subtitulo-wrapper'),
+        zenModeBtn: document.getElementById('zenModeBtn'),
+        zenCloseBtn: document.getElementById('zen-close-btn'),
+        zenOrientationBtn: document.getElementById('zen-orientation-btn'),
+        autoScrollToggle: document.getElementById('autoScrollToggle'),
+        // ELEMENTOS AÑADIDOS
+        idiomaSelect: document.getElementById('idioma'),
+        idiomaAcumuladoSelect: document.getElementById('idiomaAcumulado'),
+        fontSizeSelect: document.getElementById('fontSize'),
+        // --------
+        settingsBtn: document.getElementById('settingsBtn'),
+        closePopupBtn: document.getElementById('closePopupBtn'),
+        popupMenu: document.getElementById('popupMenu'),
+        clearTextBtn: document.getElementById('clearTextBtn'),
+        exportBtn: document.getElementById('exportBtn'),
+        previewAndExportBtn: document.getElementById('previewAndExportBtn'),
+        notesToggleBtn: document.getElementById('notesToggleBtn'),
+        notesArea: document.getElementById('notes-area'),
+        exportNotesBtn: document.getElementById('exportNotesBtn'),
+        exportNotesModalOverlay: document.getElementById('exportNotesModalOverlay'),
+        closeNotesExportBtn: document.getElementById('closeNotesExportBtn'),
+        confirmExportNotesBtn: document.getElementById('confirmExportNotesBtn'),
+        questionHistoryBtn: document.getElementById('questionHistoryBtn'),
+        questionHistoryPopup: document.getElementById('questionHistoryPopup'),
+        previewModalOverlay: document.getElementById('previewModalOverlay'),
+        closePreviewBtn: document.getElementById('closePreviewBtn'),
+        previewContent: document.getElementById('previewContent'),
+        confirmExportBtn: document.getElementById('confirmExportBtn'),
+    };
+    
+    // Variables globales
+    let statusTimeout;
+    let isAutoScrollActive = true;
+    let zenRotation = 0;
+    let questionHistory = [];
+    const MAX_HISTORY_ITEMS = 10;
+    
+    // --- CONEXIÓN CON EL SERVIDOR Y RECEPCIÓN DE DATOS ---
+    // --- SIMULACIÓN DE TRANSCRIPCIÓN EN TIEMPO REAL ---
+
+// Puedes cambiar este texto por el que quieras simular
+const textoSimulado = "Buenos días a todos. En la reunión de hoy, revisaremos los resultados del último trimestre. Como pueden ver en la presentación, hemos superado nuestros objetivos en un 15%, lo cual es un logro extraordinario. Quiero agradecer a todo el equipo por su arduo trabajo y dedicación. A continuación, analizaremos las métricas clave y discutiremos los próximos pasos para el siguiente periodo. El departamento de marketing presentará la nueva campaña publicitaria.";
+
+const palabras = textoSimulado.split(' ');
+let indiceActual = 0;
+let textoAcumulado = "";
+
+function iniciarSimulacion() {
+    updateStatus("Iniciando simulación de transcripción...", "success");
+    const intervalo = setInterval(() => {
+        if (indiceActual >= palabras.length) {
+            elements.subtitulo.textContent = "--- Fin de la demostración ---";
+            updateStatus("Simulación completada", "success");
+            clearInterval(intervalo);
+            return;
+        }
+
+        // 1. Simula el subtítulo (la frase actual)
+        const fraseCorta = palabras.slice(indiceActual, indiceActual + 5).join(' ');
+        elements.subtitulo.textContent = fraseCorta + "...";
+        elements.zenSubtitulo.textContent = fraseCorta;
+
+        // 2. Añade la siguiente palabra al texto acumulado
+        textoAcumulado += palabras[indiceActual] + " ";
+        elements.acumulado.textContent = textoAcumulado;
+
+        // 3. Mueve el scroll automáticamente si está activo
+        if (isAutoScrollActive) {
+            elements.acumulado.scrollTop = elements.acumulado.scrollHeight;
+        }
+
+        // 4. Avanza a la siguiente palabra
+        indiceActual++;
+
+    }, 700); // 700 milisegundos (0.7 segundos) entre cada palabra. Puedes ajustar este valor.
+}
+
+// Inicia la simulación automáticamente cuando la página carga
+iniciarSimulacion();
+// --- FIN DEL CÓDIGO DE SIMULACIÓN ---
+
+    // --- FUNCIONES UTILITARIAS ---
+    function copyText(elementId, button) {
+        const element = document.getElementById(elementId);
+        const textToCopy = (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') ? element.value : element.textContent;
+        if (!textToCopy || !textToCopy.trim() || !navigator.clipboard) { updateStatus("Error: No hay nada que copiar o el navegador no es compatible.", "error"); return; }
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            updateStatus("Copiado al portapapeles", "success");
+            const copyIcon = button.querySelector('.fa-copy'); const checkIcon = button.querySelector('.fa-check');
+            if (copyIcon && checkIcon) { copyIcon.classList.add('hidden'); checkIcon.classList.remove('hidden'); setTimeout(() => { copyIcon.classList.remove('hidden'); checkIcon.classList.add('hidden'); }, 2000); }
+        }).catch(err => { console.error("Error al copiar texto:", err); updateStatus("Error al copiar texto", "error"); });
+    }
+    function updateStatus(message, type = "normal", duration = 3000) { clearTimeout(statusTimeout); elements.status.textContent = message; elements.status.className = `status visible ${type}`; statusTimeout = setTimeout(() => elements.status.classList.remove('visible', 'success', 'error'), duration); }
+    function makeRequest(url, successMessage, errorMessage) { fetch(url, { method: 'POST' }).then(response => { if (!response.ok) throw new Error(errorMessage); updateStatus(successMessage, "success"); }).catch(error => { console.error(errorMessage, error); updateStatus(errorMessage, "error"); }); }
+
+    // --- LÓGICA DE EXPORTACIÓN Y VISTA PREVIA ---
+    function generateTextHeader(title) { const date = new Date(); const dateString = date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }); const timeString = date.toLocaleTimeString('es-ES'); return `==============================\n STTTVAR - ${title}\n==============================\nGenerado el: ${dateString} a las ${timeString}\n\n`; }
+    function downloadContent(content, format, filename, title) {
+        if (!content || !content.trim()) { updateStatus("No hay contenido para exportar", "error"); return; }
+        if (format === 'txt' || format === 'md') {
+            const fullContent = generateTextHeader(title) + content;
+            const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${filename}.${format}`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); updateStatus(`.${format} descargado`, "success");
+        } else if (format === 'pdf') {
+            const doc = new jsPDF();
+            const splitText = doc.splitTextToSize(generateTextHeader(title) + content, 180);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.text(splitText, 15, 20);
+            doc.save(`${filename}.pdf`); updateStatus('.pdf descargado', "success");
+        }
+    }
+    function showExportPreview() {
+        const sourceOption = document.getElementById("exportSource").value; const format = document.getElementById("exportFormat").value; const filename = document.getElementById("exportFilename").value || "exportacion";
+        let content = ""; let title = ""; const transcriptText = elements.acumulado.textContent; const notesText = elements.notesArea.value;
+        switch (sourceOption) {
+            case 'transcript': content = transcriptText; title = "Transcripción"; break;
+            case 'notes': content = notesText; title = "Apuntes Personales"; break;
+            case 'both': content = `--- TRANSCRIPCIÓN ---\n\n${transcriptText}\n\n\n--- MIS APUNTES ---\n\n${notesText}`; title = "Transcripción y Apuntes"; break;
+        }
+        if (!content.trim()) { updateStatus("No hay contenido para previsualizar", "error"); return; }
+        
+        elements.previewContent.textContent = generateTextHeader(title) + content;
+        elements.previewModalOverlay.classList.add('active');
+        
+        elements.confirmExportBtn.onclick = () => {
+            downloadContent(content, format, filename, title);
+            elements.previewModalOverlay.classList.remove('active');
+        };
+    }
+
+    // --- LÓGICA DE APUNTES ---
+    const toggleNotesView = () => { document.body.classList.toggle('notes-active'); const isActive = document.body.classList.contains('notes-active'); elements.notesToggleBtn.innerHTML = isActive ? `<i class="fas fa-times"></i>` : `<i class="fas fa-clipboard"></i>`; saveSettings(); }
+    const toggleNotesExportModal = () => elements.exportNotesModalOverlay.classList.toggle('active');
+    function downloadNotes() { const format = document.getElementById("notesExportFormat").value; const filename = document.getElementById("notesExportFilename").value || "mis_apuntes"; downloadContent(elements.notesArea.value, format, filename, "Apuntes Personales"); toggleNotesExportModal(); }
+
+    // --- LÓGICA DE PREFERENCIAS Y ALMACENAMIENTO LOCAL ---
+    const adjustFontSize = size => { elements.subtitulo.style.fontSize = `${size}px`; elements.acumulado.style.fontSize = `${Math.max(16, size * 0.7)}px`; elements.aiResponse.style.fontSize = `${Math.max(16, size * 0.7)}px`; };
+
+    function saveSettings() {
+        const settings = {
+            theme: document.body.classList.contains('dark-theme') ? 'dark' : 'light',
+            autoScroll: elements.autoScrollToggle.checked,
+            notesContent: elements.notesArea.value,
+            notesVisible: document.body.classList.contains('notes-active'),
+            // AÑADIDO
+            lang: elements.idiomaSelect.value,
+            langAcc: elements.idiomaAcumuladoSelect.value,
+            fontSize: elements.fontSizeSelect.value,
+        };
+        localStorage.setItem('stttvar_settings', JSON.stringify(settings));
+    }
+    function loadSettings() {
+        const settings = JSON.parse(localStorage.getItem('stttvar_settings'));
+        if (settings) {
+            document.body.classList.toggle('dark-theme', settings.theme === 'dark');
+            elements.themeToggle.innerHTML = settings.theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            isAutoScrollActive = settings.autoScroll ?? true;
+            elements.autoScrollToggle.checked = isAutoScrollActive;
+            if (settings.notesContent) { elements.notesArea.value = settings.notesContent; }
+            if (settings.notesVisible) { toggleNotesView(); }
+            // LÓGICA AÑADIDA
+            if(settings.lang) elements.idiomaSelect.value = settings.lang;
+            if(settings.langAcc) elements.idiomaAcumuladoSelect.value = settings.langAcc;
+            if(settings.fontSize) { 
+                elements.fontSizeSelect.value = settings.fontSize; 
+                adjustFontSize(settings.fontSize); 
+            }
+        }
+        const savedTranscript = localStorage.getItem('stttvar_transcript'); if (savedTranscript) { elements.acumulado.textContent = savedTranscript; }
+        const savedHistory = localStorage.getItem('stttvar_question_history'); if (savedHistory) { questionHistory = JSON.parse(savedHistory); }
+    }
+    const toggleTheme = () => { document.body.classList.toggle('dark-theme'); elements.themeToggle.innerHTML = document.body.classList.contains('dark-theme') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>'; saveSettings(); }
+    
+    // --- LÓGICA DE PREGUNTAS A LA IA E HISTORIAL ---
+    function sendQuestion(customPrompt) {
+        const question = customPrompt || elements.aiQuestion.value.trim(); if (!question) { updateStatus("Por favor, escribe una pregunta", "error"); return; }
+        const btnContent = elements.sendQuestionBtn.querySelector('.button-content'); const btnLoader = elements.sendQuestionBtn.querySelector('.button-loader');
+        elements.sendQuestionBtn.disabled = true; btnContent.classList.add('hidden'); btnLoader.classList.remove('hidden');
+        elements.aiResponseWrapper.classList.remove('hidden'); elements.aiResponse.textContent = "Procesando...";
+        if (!customPrompt) { addQuestionToHistory(question); }
+        
+        fetch(`/ask_ai/${clientId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: question }) })
+            .then(res => { if (!res.ok) throw new Error("Error en servidor"); updateStatus("Pregunta enviada", "success"); })
+            .catch(err => updateStatus("Error al enviar pregunta", "error"))
+            .finally(() => { elements.sendQuestionBtn.disabled = false; btnContent.classList.remove('hidden'); btnLoader.classList.add('hidden'); });
+        if (!customPrompt) elements.aiQuestion.value = "";
+    }
+    function quickAction(actionType) {
+        const text = elements.acumulado.textContent; if (!text.trim()) { updateStatus("No hay texto para procesar", "error"); return; }
+        const prompts = { summarize: "Resume el texto:\n\n", keywords: "Extrae 5 puntos clave:\n\n", correct: "Corrige la gramática:\n\n" };
+        sendQuestion(prompts[actionType] + text);
+    }
+    function addQuestionToHistory(question) {
+        questionHistory = questionHistory.filter(item => item !== question);
+        questionHistory.unshift(question);
+        if (questionHistory.length > MAX_HISTORY_ITEMS) { questionHistory.pop(); }
+        localStorage.setItem('stttvar_question_history', JSON.stringify(questionHistory));
+    }
+    function renderQuestionHistory() {
+        elements.questionHistoryPopup.innerHTML = '';
+        if (questionHistory.length === 0) {
+            elements.questionHistoryPopup.innerHTML = '<div class="history-item" style="justify-content:center;"><span>El historial está vacío</span></div>';
+            return;
+        }
+        questionHistory.forEach((item, index) => {
+            const historyDiv = document.createElement('div'); historyDiv.className = 'history-item';
+            historyDiv.innerHTML = `<span></span><button class="history-delete-btn" title="Eliminar del historial" data-index="${index}"><i class="fas fa-times"></i></button>`;
+            historyDiv.querySelector('span').textContent = item;
+            historyDiv.querySelector('span').addEventListener('click', () => { elements.aiQuestion.value = item; elements.questionHistoryPopup.classList.add('hidden'); elements.aiQuestion.focus(); });
+            historyDiv.querySelector('.history-delete-btn').addEventListener('click', (e) => { e.stopPropagation(); questionHistory.splice(index, 1); localStorage.setItem('stttvar_question_history', JSON.stringify(questionHistory)); renderQuestionHistory(); });
+            elements.questionHistoryPopup.appendChild(historyDiv);
+        });
+    }
+
+    // --- OTRAS FUNCIONALIDADES Y EVENTOS ---
+    const toggleSettingsModal = () => { elements.settingsModalOverlay.classList.toggle('active'); if (!elements.settingsModalOverlay.classList.contains('active')) { elements.exportSection.classList.remove("active"); } };
+    const toggleZenMode = () => { document.body.classList.toggle('zen-active'); zenRotation = 0; elements.zenSubtituloWrapper.style.transform = `rotate(${zenRotation}deg)`; };
+    function rotateZenText() { zenRotation = (zenRotation + 90) % 360; elements.zenSubtituloWrapper.style.transform = `rotate(${zenRotation}deg)`; }
+
+    // --- ASIGNACIÓN DE EVENTOS (EVENT LISTENERS) ---
+    document.addEventListener('DOMContentLoaded', () => { loadSettings(); updateStatus("Listo", "success", 1500); });
+    elements.themeToggle.addEventListener('click', toggleTheme);
+    elements.settingsBtn.addEventListener('click', toggleSettingsModal);
+    elements.closePopupBtn.addEventListener('click', toggleSettingsModal);
+    elements.settingsModalOverlay.addEventListener('click', (e) => { if(e.target === elements.settingsModalOverlay) toggleSettingsModal() });
+    elements.popupMenu.addEventListener('click', (e) => e.stopPropagation());
+    elements.clearTextBtn.addEventListener('click', () => { if (confirm("¿Estás seguro de que quieres borrar toda la transcripción? Esta acción no se puede deshacer.")) { makeRequest(`/clear_text/${clientId}`, "Transcripción limpiada", "Error"); elements.aiResponseWrapper.classList.add("hidden"); elements.acumulado.textContent = ''; localStorage.removeItem('stttvar_transcript'); } });
+    elements.exportBtn.addEventListener('click', () => elements.exportSection.classList.toggle("active"));
+    elements.previewAndExportBtn.addEventListener('click', showExportPreview);
+    elements.closePreviewBtn.addEventListener('click', () => elements.previewModalOverlay.classList.remove('active'));
+    elements.previewModalOverlay.addEventListener('click', () => elements.previewModalOverlay.classList.remove('active'));
+    elements.previewModalOverlay.querySelector('.popup-menu').addEventListener('click', (e) => e.stopPropagation());
+    elements.sendQuestionBtn.addEventListener("click", () => sendQuestion());
+    elements.aiQuestion.addEventListener("keypress", event => { if (event.key === "Enter") sendQuestion(); });
+    elements.zenModeBtn.addEventListener('click', toggleZenMode);
+    elements.zenCloseBtn.addEventListener('click', toggleZenMode);
+    elements.zenOrientationBtn.addEventListener('click', rotateZenText);
+    elements.autoScrollToggle.addEventListener('change', (event) => { isAutoScrollActive = event.target.checked; saveSettings(); });
+    // EVENTOS AÑADIDOS
+    elements.idiomaSelect.addEventListener('change', () => { makeRequest(`/set_language/${clientId}/${elements.idiomaSelect.value}`); saveSettings(); });
+    elements.idiomaAcumuladoSelect.addEventListener('change', () => { makeRequest(`/set_language_acumulado/${clientId}/${elements.idiomaAcumuladoSelect.value}`); saveSettings(); });
+    elements.fontSizeSelect.addEventListener('change', () => { adjustFontSize(elements.fontSizeSelect.value); saveSettings(); });
+    // ---------
+    elements.notesToggleBtn.addEventListener('click', toggleNotesView);
+    elements.notesArea.addEventListener('input', saveSettings);
+    elements.exportNotesBtn.addEventListener('click', toggleNotesExportModal);
+    elements.closeNotesExportBtn.addEventListener('click', toggleNotesExportModal);
+    elements.confirmExportNotesBtn.addEventListener('click', downloadNotes);
+    elements.exportNotesModalOverlay.addEventListener('click', (e) => { if (e.target === elements.exportNotesModalOverlay) toggleNotesExportModal(); });
+    elements.exportNotesModalOverlay.querySelector('.popup-menu').addEventListener('click', (e) => e.stopPropagation());
+    elements.questionHistoryBtn.addEventListener('click', () => {
+        elements.questionHistoryPopup.classList.toggle('hidden');
+        if (!elements.questionHistoryPopup.classList.contains('hidden')) { renderQuestionHistory(); }
+    });
+    document.addEventListener('click', (e) => { if (!elements.aiQuestion.parentElement.contains(e.target)) { elements.questionHistoryPopup.classList.add('hidden'); } });
+
+</script>
+
+</body>
+</html>
