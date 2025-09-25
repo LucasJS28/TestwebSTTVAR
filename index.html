@@ -286,6 +286,29 @@ const palabras = textoSimulado.split(' ');
 let indiceActual = 0;
 let textoAcumulado = "";
 
+/*
+// --- CONEXIÓN CON EL SERVIDOR Y RECEPCIÓN DE DATOS ---
+const source = new EventSource(`/stream?client_id=${clientId}`);
+source.onmessage = event => {
+    const data = JSON.parse(event.data);
+    elements.subtitulo.textContent = data.subtitulo;
+    elements.zenSubtitulo.textContent = data.subtitulo;
+    elements.acumulado.textContent = data.acumulado;
+    // Funcionalidad: Almacenamiento local de la transcripción
+    localStorage.setItem('stttvar_transcript', data.acumulado);
+    if (isAutoScrollActive) { elements.acumulado.scrollTop = elements.acumulado.scrollHeight; }
+    if (data.ai_response) {
+        elements.aiResponseWrapper.classList.remove('hidden');
+        elements.aiResponse.classList.remove("placeholder");
+        elements.aiResponse.textContent = data.ai_response;
+        updateStatus("Respuesta de IA recibida", "success");
+    }
+};
+source.onerror = () => updateStatus("Desconectado. Reconectando...", "error");
+
+*/
+
+
 function iniciarSimulacion() {
     updateStatus("Iniciando simulación de transcripción...", "success");
     const intervalo = setInterval(() => {
